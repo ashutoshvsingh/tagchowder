@@ -1,4 +1,4 @@
-Consider having elements that suppress reopening
+Consider having elements that suppress reopening  
 Handle namespace declarations semi-properly
 Squelch namespaces better in --nons mode
 Clean systemids as well as publicids
