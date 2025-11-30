@@ -39,27 +39,38 @@ public class ElementType {
     private AttributesImpl theAtts; // default attributes
     private ElementType theParent; // parent of this element type
     private Schema theSchema; // schema to which this belongs
+    private ParserContext parserContext;  // parser context
 
     /**
      * Construct an ElementType: but it's better to use Schema.element() instead. The content model, member-of, and flags vectors are specified as
      * ints.
-     *
      * @param name The element type name
      * @param model ORed-together bits representing the content models allowed in the content of this element type
      * @param memberOf ORed-together bits representing the content models to which this element type belongs
      * @param flags ORed-together bits representing the flags associated with this element type
      * @param schema The schema with which this element type will be associated
+     * @param parserContext the parser context
      */
 
-    public ElementType(final String name, final int model, final int memberOf, final int flags, final Schema schema) {
+    public ElementType(final String name, final int model, final int memberOf,
+                       final int flags, final Schema schema, final ParserContext parserContext) {
         theName = name;
         theModel = model;
         theMemberOf = memberOf;
         theFlags = flags;
         theAtts = new AttributesImpl();
         theSchema = schema;
+        this.parserContext = parserContext;
         theNamespace = namespace(name, false);
         theLocalName = localName(name);
+    }
+
+    /**
+     * Clear the state.
+     */
+    public void clear() {
+        parserContext = null;
+        theSchema = null;
     }
 
     /**
@@ -79,7 +90,7 @@ public class ElementType {
         if (prefix.equals("xml")) {
             return "http://www.w3.org/XML/1998/namespace";
         } else {
-            return ("urn:x-prefix:" + prefix).intern();
+            return parserContext.getReference("urn:x-prefix:" + prefix);
         }
     }
 
@@ -94,7 +105,7 @@ public class ElementType {
         if (colon == -1) {
             return name;
         } else {
-            return name.substring(colon + 1).intern();
+            return parserContext.getReference(name.substring(colon + 1));
         }
     }
 
@@ -204,7 +215,6 @@ public class ElementType {
 
     /**
      * Sets an attribute and its value into an AttributesImpl object. Attempts to set a namespace declaration are ignored.
-     *
      * @param atts The AttributesImpl object
      * @param name The name (Qname) of the attribute
      * @param type The type of the attribute
@@ -218,12 +228,12 @@ public class ElementType {
         if (n.equals("xmlns") || n.startsWith("xmlns:")) {
             return;
         }
-        ;
+
         String namespace = namespace(n, true);
         String localName = localName(n);
         int i = atts.getIndex(n);
         if (i == -1) {
-            n = n.intern();
+            n = parserContext.getReference(n);
             if (t == null) {
                 t = "CDATA";
             }
@@ -277,7 +287,6 @@ public class ElementType {
 
     /**
      * Sets an attribute and its value into this element type.
-     *
      * @param name The name of the attribute
      * @param type The type of the attribute
      * @param value The value of the attribute

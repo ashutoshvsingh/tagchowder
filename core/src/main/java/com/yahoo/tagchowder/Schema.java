@@ -52,6 +52,20 @@ public abstract class Schema {
     private String theURI = "";
     private String thePrefix = "";
     private ElementType theRoot = null;
+    private ParserContext theParserContext;
+
+    protected Schema(final Parser parser) {
+        this.theParserContext = parser.getTheParserContext();
+    }
+
+    /**
+     * Clear the state.
+     */
+    public void clear() {
+        theParserContext = null;
+        theElementTypes.clear();
+        theElementTypes = null;
+    }
 
     /**
      * Add or replace an element type for this schema.
@@ -63,7 +77,7 @@ public abstract class Schema {
      **/
 
     public void elementType(final String name, final int model, final int memberOf, final int flags) {
-        ElementType e = new ElementType(name, model, memberOf, flags, this);
+        ElementType e = new ElementType(name, model, memberOf, flags, this, theParserContext);
         theElementTypes.put(name.toLowerCase(), e);
         if (memberOf == M_ROOT) {
             theRoot = e;
@@ -124,7 +138,7 @@ public abstract class Schema {
      **/
 
     public void entity(final String name, final int value) {
-        theEntities.put(name, new Integer(value));
+        theEntities.put(name, value);
     }
 
     /**
@@ -193,5 +207,4 @@ public abstract class Schema {
     public void setPrefix(final String prefix) {
         thePrefix = prefix;
     }
-
 }
